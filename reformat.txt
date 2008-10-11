@@ -1,0 +1,18 @@
+SELECT pmid FROM gene2pubmed, pubmed_mesh WHERE gene2pubmed.gene_id=XXX AND gene2pubmed.pmid=pubmed_mesh.pmid AND pubmed_mesh.term=YYY LIMIT 10
+
+echo "SELECT DISTINCT gene2pubmed.pmid FROM gene2pubmed, pubmed_mesh_parent
+WHERE gene2pubmed.gene_id=7157 AND
+gene2pubmed.pmid=pubmed_mesh_parent.pmid AND
+pubmed_mesh_parent.mesh_parent='Neoplasms' LIMIT 10" | mysql-dbrc wcdb2 | tail -n +2
+
+Extract gene2pubmed2mesh pairings of relevance
+(this would need to be distributed)
+
+http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?db=pubmed&dbfrom=gene&id=7157&cmd=neighbor&linkname=gene_pubmed&retmode=html
+
+echo "SELECT DISTINCT gene2pubmed.pmid FROM gene2pubmed, pubmed_mesh_parent
+WHERE gene2pubmed.gene_id=7157 AND
+gene2pubmed.pmid=pubmed_mesh_parent.pmid AND
+pubmed_mesh_parent.mesh_parent='Neoplasms' LIMIT 10" | mysql-dbrc wcdb2 | tail -n +2 | awk 'NR>1{printf ","};{printf("[http://view.ncbi.nlm.nih.gov/gene/%s %s]",$1, $1)};END{printf("\n")}'
+
+for line in 
