@@ -30,19 +30,17 @@ default:	$(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)
 
 # Current
 $(OUTPUT_DIR)/curr-hum-disease-validation-tuples.txt: \
-		$(CURR_DIR)/$(DIRECT_GD_PREFIX)/all-$(CURR_REF_SOURCE)-gene-mesh.txt \
-		$(CURR_DIR)/$(PROFILE_GD_PREFIX)/hum-gene.txt \
+		$(CURR_DIR)/$(DIRECT_GD_PREFIX)/hum-$(CURR_REF_SOURCE)-gene-mesh.txt \
 		$(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt \
 		filter_file.py
-	cat $(CURR_DIR)/$(DIRECT_GD_PREFIX)/all-$(CURR_REF_SOURCE)-gene-mesh.txt | awk -F"|" '{print $$1 "|" $$2 }' | python filter_file.py $(CURR_DIR)/$(PROFILE_GD_PREFIX)/hum-gene.txt | awk -F"|" '{print $$2 "|" $$1 }' | python filter_file.py $(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp
+	cat $(CURR_DIR)/$(DIRECT_GD_PREFIX)/hum-$(CURR_REF_SOURCE)-gene-mesh.txt | awk -F"|" '{print $$2 "|" $$1 }' | python filter_file.py $(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp
 	mv $@.tmp $@
 
 # Previous
 $(OUTPUT_DIR)/pred-hum-disease-validation-tuples.txt: \
-		$(PRED_DIR)/$(DIRECT_GD_PREFIX)/all-$(PRED_REF_SOURCE)-gene-mesh.txt \
-		$(PRED_DIR)/$(PROFILE_GD_PREFIX)/hum-gene.txt \
+		$(PRED_DIR)/$(DIRECT_GD_PREFIX)/hum-$(PRED_REF_SOURCE)-gene-mesh.txt \
 		$(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt 
-	cat $(PRED_DIR)/$(DIRECT_GD_PREFIX)/all-$(PRED_REF_SOURCE)-gene-mesh.txt | awk -F"|" '{print $$1 "|" $$2 }' | python filter_file.py $(PRED_DIR)/$(PROFILE_GD_PREFIX)/hum-gene.txt | awk -F"|" '{print $$2 "|" $$1 }' | python filter_file.py $(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp
+	cat $(PRED_DIR)/$(DIRECT_GD_PREFIX)/hum-$(PRED_REF_SOURCE)-gene-mesh.txt  | awk -F"|" '{print $$2 "|" $$1 }' | python filter_file.py $(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/new-hum-disease-validation-tuples.txt: $(OUTPUT_DIR)/curr-hum-disease-validation-tuples.txt $(OUTPUT_DIR)/pred-hum-disease-validation-tuples.txt 
