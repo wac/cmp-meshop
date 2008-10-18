@@ -48,7 +48,7 @@ $(OUTPUT_DIR)/new-hum-disease-validation-tuples.txt: $(OUTPUT_DIR)/curr-hum-dise
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p.txt: $(OUTPUT_DIR)/new-hum-disease-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/disease-$(PRED_REF_SOURCE)-profiles.txt
-	python filter_file.py $(OUTPUT_DIR)/new-hum-disease-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/disease-$(PRED_REF_SOURCE)-profiles.txt 2 > $@.tmp
+	python filter_file.py $(OUTPUT_DIR)/new-hum-disease-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/hum-disease-$(PRED_REF_SOURCE)-profiles.txt 2 > $@.tmp
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p.wikidot: \
