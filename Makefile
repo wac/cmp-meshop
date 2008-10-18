@@ -5,8 +5,8 @@ PRED_DIR=../digenei1
 # Current Results
 CURR_DIR=../digenei2
 
-PRED_REF_SOURCE=generif
-CURR_REF_SOURCE=generif
+PRED_REF_SOURCE=gene2pubmed
+CURR_REF_SOURCE=gene2pubmed
 
 DIRECT_GD_PREFIX=txt/direct_gene_disease
 PROFILE_GD_PREFIX=txt/profile_gene_disease
@@ -30,17 +30,17 @@ default:	$(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)
 
 # Current
 $(OUTPUT_DIR)/curr-hum-disease-validation-tuples.txt: \
-		$(CURR_DIR)/$(DIRECT_GD_PREFIX)/hum-$(CURR_REF_SOURCE)-gene-mesh.txt \
+		$(CURR_DIR)/$(DIRECT_GD_PREFIX)/hum-$(CURR_REF_SOURCE)-gene-mesh-p.txt \
 		$(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt \
 		filter_file.py
-	cat $(CURR_DIR)/$(DIRECT_GD_PREFIX)/hum-$(CURR_REF_SOURCE)-gene-mesh.txt | awk -F"|" '{print $$2 "|" $$1 }' | python filter_file.py $(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp
+	cat $(CURR_DIR)/$(DIRECT_GD_PREFIX)/hum-$(CURR_REF_SOURCE)-gene-mesh-p.txt | awk -F"|" '{print $$2 "|" $$1 }' | python filter_file.py $(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp
 	mv $@.tmp $@
 
 # Previous
 $(OUTPUT_DIR)/pred-hum-disease-validation-tuples.txt: \
-		$(PRED_DIR)/$(DIRECT_GD_PREFIX)/hum-$(PRED_REF_SOURCE)-gene-mesh.txt \
+		$(PRED_DIR)/$(DIRECT_GD_PREFIX)/hum-$(PRED_REF_SOURCE)-gene-mesh-p.txt \
 		$(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt 
-	cat $(PRED_DIR)/$(DIRECT_GD_PREFIX)/hum-$(PRED_REF_SOURCE)-gene-mesh.txt  | awk -F"|" '{print $$2 "|" $$1 }' | python filter_file.py $(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp
+	cat $(PRED_DIR)/$(DIRECT_GD_PREFIX)/hum-$(PRED_REF_SOURCE)-gene-mesh-p.txt  | awk -F"|" '{print $$2 "|" $$1 }' | python filter_file.py $(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/new-hum-disease-validation-tuples.txt: $(OUTPUT_DIR)/curr-hum-disease-validation-tuples.txt $(OUTPUT_DIR)/pred-hum-disease-validation-tuples.txt 
