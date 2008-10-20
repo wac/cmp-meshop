@@ -14,6 +14,9 @@ OUTPUT_DIR=txt
 
 SQL_CMD=mysql-dbrc wcdb
 
+# Put options you want to change in a new file called config.mk
+-include config.mk
+
 default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.wikidot \
 		$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p-histogram.pdf
 
