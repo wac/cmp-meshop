@@ -5,8 +5,8 @@ PRED_DIR=../digenei1
 # Current Results
 CURR_DIR=../digenei2
 
-PRED_REF_SOURCE=gene2pubmed
-CURR_REF_SOURCE=gene2pubmed
+PRED_REF_SOURCE=generif
+CURR_REF_SOURCE=generif
 
 DIRECT_GD_PREFIX=txt/direct_gene_disease
 PROFILE_GD_PREFIX=txt/profile_gene_disease
