@@ -13,8 +13,10 @@ PROFILE_GD_PREFIX=txt/profile_gene_disease
 
 OUTPUT_DIR=txt
 
+SQL_CMD=mysql-dbrc wcdb
+
 default:	$(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p.wikidot \
-		$(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p-histogram.txt
+		$(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p-histogram.pdf
 
 # Take the results from the direct in 2
 # compare to the results in the profile from 1
@@ -52,7 +54,8 @@ $(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p.txt: $
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p.wikidot: \
-		$(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p.txt
+		$(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p.txt \
+		wikiformat-results.sh
 	sort -n -t "|" -k 12,2 $(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p.txt | head -n 100 > $@.tmp
 	export PRED_REF_SOURCE=$(PRED_REF_SOURCE) && cat $@.tmp | sh wikiformat-results.sh > $@.tmp2
 	rm $@.tmp ; mv $@.tmp2 $@
@@ -60,6 +63,12 @@ $(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p.wikido
 $(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p-histogram.txt: \
 		$(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p.txt
 	cat $(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p.txt |  python histogram.py 2 > $@.tmp
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p-histogram.pdf: \
+		$(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p-histogram.txt \
+		plot-histogram.R
+	export PROCESS_INFILE=$<.tmp ; export PROCESS_OUTFILE=$@.tmp ; R CMD BATCH --no-save plot-histogram.R $@.log
 	mv $@.tmp $@
 
 
