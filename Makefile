@@ -68,7 +68,7 @@ $(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p-histog
 $(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p-histogram.pdf: \
 		$(OUTPUT_DIR)/new-hum-disease-validation-tuples-pred-$(PRED_REF_SOURCE)-p-histogram.txt \
 		plot-histogram.R
-	export PROCESS_INFILE=$<.tmp ; export PROCESS_OUTFILE=$@.tmp ; R CMD BATCH --no-save plot-histogram.R $@.log
+	export PROCESS_INFILE=$< ; export PROCESS_OUTFILE=$@.tmp ; R CMD BATCH --no-save plot-histogram.R $@.log
 	mv $@.tmp $@
 
 
