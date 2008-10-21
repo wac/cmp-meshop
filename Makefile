@@ -63,7 +63,8 @@ $(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.wikidot: \
 	rm $@.tmp ; mv $@.tmp2 $@
 
 $(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p-histogram.txt: \
-		$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt
+		$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt \
+		histogram.py
 	cat $(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt |  python histogram.py 2 > $@.tmp
 	mv $@.tmp $@
 
