@@ -7,7 +7,7 @@ import math
 sep='|'
 
 def usage():
-    print "Generate histogram of the log (of absolute) values in field specified by first argument,  binned to one decimal place"
+    print "Generate histogram of the log10 (of absolute) values in field specified by first argument,  binned to one decimal place"
     print "\n", sys.argv[0], "<hist_col>\n"
     print "Input from stdin,  histogram output to stdout"
     print "Field separator is '", sep, "'"
@@ -16,8 +16,8 @@ def usage():
 # Assume if x is too small that it is at least 1e-323
 def safelog(x):
     if math.fabs(float(x)) < 1e-323 :
-        return -743.74692474082133 # math.log(1e-323)
-    return math.log(math.fabs(float(x)))
+        return -323 # math.log(1e-323)
+    return math.log(math.fabs(float(x)), 10)
 
 def main():
     hist={}
