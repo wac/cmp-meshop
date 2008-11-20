@@ -6,12 +6,14 @@ sep='|'
 
 def usage():
 	print "Print all rows of data_file containing a row of pat_file in the first (or num_fields) field(s)"
-        print sys.argv[0], " <pat_file> [<data_file> [<num_fields>]]"
+        print sys.argv[0], " <pat_file> [<data_file> [<num_fields> [YN]]]"
 	print "Field delimiter is  '",sep,"'"
 	print "Use '-' as data_file or omit for stdin"
 	print "num_fields defaults to 1"
+	print "YN mode prints all lines,  adding one column at the front of Y or N depending if it matches a row of pat_file"
 
 def main():
+	yesno_mode=False
 	num_fields=1
 	if (len(sys.argv) >= 3):
 		patfile=open(sys.argv[1])
@@ -21,6 +23,8 @@ def main():
 			datafile=open(sys.argv[2])
 		if (len(sys.argv) > 3):
 			num_fields=int(sys.argv[3])
+			if (len(sys.argv) > 4) and (sys.argv[4] == "YN"):
+				yesno_mode=True
 	elif (len(sys.argv) == 2):
 		patfile=open(sys.argv[1])
 		datafile=sys.stdin
@@ -41,6 +45,12 @@ def main():
 		if len(tuple) < (num_fields):
 			continue
 		if sep.join(tuple[:num_fields]) in patterns:
-			print line,
+			if yesno_mode == True:
+				print "Y"+sep+line,
+			else:
+				print line,
+		else:
+			if yesno_mode == True:
+				print "N"+sep+line,
 
 main()

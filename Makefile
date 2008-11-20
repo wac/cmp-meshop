@@ -12,13 +12,16 @@ PROFILE_GD_PREFIX=txt/profile_gene_disease
 
 OUTPUT_DIR=txt
 
+BIGTMP_DIR=tmp
+
 SQL_CMD=mysql-dbrc wcdb
 
 # Put options you want to change in a new file called config.mk
 -include config.mk
 
 default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.wikidot \
-		$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p-histogram.pdf
+		$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p-histogram.pdf \
+		$(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-auc.txt
 
 # Take the results from the direct in 2
 # compare to the results in the profile from 1
@@ -35,16 +38,16 @@ default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.wi
 # Current
 $(OUTPUT_DIR)/curr-$(REF_SOURCE)-hum-disease-validation-tuples.txt: \
 		$(CURR_DIR)/$(DIRECT_GD_PREFIX)/hum-$(REF_SOURCE)-gene-mesh-p.txt \
-		$(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt \
+		$(PRED_DIR)/$(DIRECT_GD_PREFIX)/mesh-disease.txt \
 		filter_file.py
-	cat $(CURR_DIR)/$(DIRECT_GD_PREFIX)/hum-$(REF_SOURCE)-gene-mesh-p.txt | awk -F"|" '{print $$2 "|" $$1 }' | python filter_file.py $(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp
+	cat $(CURR_DIR)/$(DIRECT_GD_PREFIX)/hum-$(REF_SOURCE)-gene-mesh-p.txt | awk -F"|" '{print $$2 "|" $$1 }' | python filter_file.py $(PRED_DIR)/$(DIRECT_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp
 	mv $@.tmp $@
 
 # Previous
 $(OUTPUT_DIR)/pred-$(REF_SOURCE)-hum-disease-validation-tuples.txt: \
 		$(PRED_DIR)/$(DIRECT_GD_PREFIX)/hum-$(REF_SOURCE)-gene-mesh-p.txt \
-		$(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt 
-	cat $(PRED_DIR)/$(DIRECT_GD_PREFIX)/hum-$(REF_SOURCE)-gene-mesh-p.txt  | awk -F"|" '{print $$2 "|" $$1 }' | python filter_file.py $(PRED_DIR)/$(PROFILE_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp
+		$(PRED_DIR)/$(DIRECT_GD_PREFIX)/mesh-disease.txt 
+	cat $(PRED_DIR)/$(DIRECT_GD_PREFIX)/hum-$(REF_SOURCE)-gene-mesh-p.txt  | awk -F"|" '{print $$2 "|" $$1 }' | python filter_file.py $(PRED_DIR)/$(DIRECT_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples.txt: $(OUTPUT_DIR)/curr-$(REF_SOURCE)-hum-disease-validation-tuples.txt $(OUTPUT_DIR)/pred-$(REF_SOURCE)-hum-disease-validation-tuples.txt 
@@ -74,6 +77,18 @@ $(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p-histogram.p
 	export PROCESS_INFILE=$< ; export PROCESS_OUTFILE=$@.tmp ; PROCESS_LABEL="$REF_SOURCE Profile Prediction Score Histogram" ; R CMD BATCH --no-save plot-histogram.R $@.log
 	mv $@.tmp $@
 
+$(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt: $(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/hum-disease-$(REF_SOURCE)-profiles.txt 
+	python filter_file.py $(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/hum-disease-$(REF_SOURCE)-profiles.txt 2 YN > $@.tmp
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-auc.txt: $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt \
+		cum_gains_auc.sh \
+		cum_gains_auc.py 
+	rm -f $@.tmp
+	sh cum_gains_auc.sh $< $@.tmp all-$(REF_SOURCE)-hum-disease-validation-graph-score
+	rm -f $(BIGTMP_DIR)/*
+	rm -f $@.tmp.sort
+	mv $@.tmp $@
 
 # Extract and connect the prediction values?  Above formats should be made conducive to grep
 
