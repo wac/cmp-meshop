@@ -16,12 +16,18 @@ BIGTMP_DIR=tmp
 
 SQL_CMD=mysql-dbrc wcdb
 
+# Location of the CTD gene_disease_relations.tsv
+CTD_DIR=CTD
+
 # Put options you want to change in a new file called config.mk
 -include config.mk
 
 default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.wikidot \
 		$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p-histogram.pdf \
-		$(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-auc.txt
+		$(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-auc.txt \
+		$(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-training-auc.txt \
+		$(OUTPUT_DIR)/CTD-$(REF_SOURCE)-hum-disease-validation-auc.txt
+#		$(OUTPUT_DIR)/rev-all-$(REF_SOURCE)-hum-disease-validation-auc.txt 
 
 # Take the results from the direct in 2
 # compare to the results in the profile from 1
@@ -82,13 +88,45 @@ $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt: $(OUTP
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-auc.txt: $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt \
-		cum_gains_auc.sh \
-		cum_gains_auc.py 
+		auc.sh roc.py 
 	rm -f $@.tmp
-	sh cum_gains_auc.sh $< $@.tmp all-$(REF_SOURCE)-hum-disease-validation-graph-score
+	sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-graph-score roc.py
 	rm -f $(BIGTMP_DIR)/*
 	rm -f $@.tmp.sort
 	mv $@.tmp $@
+
+#$(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-auc.txt: $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt \
+#		auc.sh \
+#		cum_gains_auc.py 
+#	rm -f $@.tmp
+#	sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-graph-score cum_gains_auc.py
+#	rm -f $(BIGTMP_DIR)/*
+#	rm -f $@.tmp.sort
+#	mv $@.tmp $@
+
+#$(OUTPUT_DIR)/rev-all-$(REF_SOURCE)-hum-disease-validation-auc.txt: $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt \
+#		rev_cum_gains_auc.sh \
+#		cum_gains_auc.py 
+#	rm -f $@.tmp
+#	sh rev_cum_gains_auc.sh $< $@.tmp $(OUTPUT_DIR)/rev-all-$(REF_SOURCE)-hum-disease-validation-graph
+#	rm -f $(BIGTMP_DIR)/*
+#	rm -f $@.tmp.sort
+#	mv $@.tmp $@
+
+# Training Set (Old) AUC
+
+$(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-training-tuples-pred-p.txt:  $(OUTPUT_DIR)/pred-$(REF_SOURCE)-hum-disease-validation-tuples.txt  $(PRED_DIR)/$(PROFILE_GD_PREFIX)/hum-disease-$(REF_SOURCE)-profiles.txt 
+	python filter_file.py  $(OUTPUT_DIR)/pred-$(REF_SOURCE)-hum-disease-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/hum-disease-$(REF_SOURCE)-profiles.txt 2 YN > $@.tmp
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-training-auc.txt: $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-training-tuples-pred-p.txt \
+		auc.sh roc.py 
+	rm -f $@.tmp
+	sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-training-graph-score roc.py
+	rm -f $(BIGTMP_DIR)/*
+	rm -f $@.tmp.sort
+	mv $@.tmp $@
+
 
 # Extract and connect the prediction values?  Above formats should be made conducive to grep
 
@@ -102,6 +140,23 @@ $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-auc.txt: $(OUTPUT_DIR)/al
 
 #### Validation (Separate Dataset? Extract validation data)
 
+# CTD Validation
+
+$(OUTPUT_DIR)/CTD-validation-tuples.txt: $(CTD_DIR)/gene_disease_relations.tsv
+	grep -v inferred $< | grep "MESH:D" | sed "y/\t/\|/" | cut -f 2,3 -d "|" | awk -F"|" '{print  $$2 "|" $$1}' | sort -k 1,2 -t "|" > $@.tmp
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt: $(OUTPUT_DIR)/CTD-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/hum-disease-$(REF_SOURCE)-profiles.txt 
+	python filter_file.py $(OUTPUT_DIR)/CTD-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/hum-disease-$(REF_SOURCE)-profiles.txt 2 YN > $@.tmp
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/CTD-$(REF_SOURCE)-hum-disease-validation-auc.txt: $(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt \
+		auc.sh roc.py 
+	rm -f $@.tmp
+	sh auc.sh $< $@.tmp $(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-hum-disease-validation-graph-score roc.py
+	rm -f $(BIGTMP_DIR)/*
+	rm -f $@.tmp.sort
+	mv $@.tmp $@
 # OMIM references
 # MIM2MeSH mapping
 
