@@ -26,7 +26,8 @@ default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.wi
 		$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p-histogram.pdf \
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-auc.txt \
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-training-auc.txt \
-		$(OUTPUT_DIR)/CTD-$(REF_SOURCE)-hum-disease-validation-auc.txt
+		$(OUTPUT_DIR)/CTD-$(REF_SOURCE)-hum-disease-validation-auc.txt \
+		$(OUTPUT_DIR)/all-generif-tf-cancer-validation-auc.txt
 #		$(OUTPUT_DIR)/rev-all-$(REF_SOURCE)-hum-disease-validation-auc.txt 
 
 # Take the results from the direct in 2
@@ -95,25 +96,21 @@ $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-auc.txt: $(OUTPUT_DIR)/al
 	rm -f $@.tmp.sort
 	mv $@.tmp $@
 
-#$(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-auc.txt: $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt \
-#		auc.sh \
-#		cum_gains_auc.py 
-#	rm -f $@.tmp
-#	sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-graph-score cum_gains_auc.py
-#	rm -f $(BIGTMP_DIR)/*
-#	rm -f $@.tmp.sort
-#	mv $@.tmp $@
+# Filtered output
 
-#$(OUTPUT_DIR)/rev-all-$(REF_SOURCE)-hum-disease-validation-auc.txt: $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt \
-#		rev_cum_gains_auc.sh \
-#		cum_gains_auc.py 
-#	rm -f $@.tmp
-#	sh rev_cum_gains_auc.sh $< $@.tmp $(OUTPUT_DIR)/rev-all-$(REF_SOURCE)-hum-disease-validation-graph
-#	rm -f $(BIGTMP_DIR)/*
-#	rm -f $@.tmp.sort
-#	mv $@.tmp $@
+$(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-tuples-pred-p.txt: $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt 
+	cat $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt | python filter_file.py $(OUTPUT_DIR)/mesh-cancer.txt -f 1 | python filter_file.py $(OUTPUT_DIR)/tf-list.txt -f 2 > $@.tmp
+	mv $@.tmp $@
 
-# Training Set (Old) AUC
+$(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-auc.txt: $(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-tuples-pred-p.txt \
+		auc.sh roc.py 
+	rm -f $@.tmp
+	sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-graph-score roc.py
+	rm -f $(BIGTMP_DIR)/*
+	rm -f $@.tmp.sort
+	mv $@.tmp $@
+
+# Tuples from the Prediction Set only (Training Set)
 
 $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-training-tuples-pred-p.txt:  $(OUTPUT_DIR)/pred-$(REF_SOURCE)-hum-disease-validation-tuples.txt  $(PRED_DIR)/$(PROFILE_GD_PREFIX)/hum-disease-$(REF_SOURCE)-profiles.txt 
 	python filter_file.py  $(OUTPUT_DIR)/pred-$(REF_SOURCE)-hum-disease-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/hum-disease-$(REF_SOURCE)-profiles.txt 2 YN > $@.tmp
