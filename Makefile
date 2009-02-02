@@ -17,7 +17,7 @@ BIGTMP_DIR=tmp
 SQL_CMD=mysql-dbrc wcdb
 
 # Location of the CTD gene_disease_relations.tsv
-CTD_DIR=CTD
+CTD_DIR=../CTD
 
 # Put options you want to change in a new file called config.mk
 -include config.mk
