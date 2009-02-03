@@ -80,10 +80,14 @@ $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-auc.txt: $(OUTPUT_DIR)/al
 	mv $@.tmp $@
 
 # Filtered output
+$(OUTPUT_DIR)/mesh-cancer.txt:
+	echo "SELECT child FROM mesh_child WHERE term='Neoplasms'" | $(SQL_CMD) | tail -n +2 > $@.tmp
+	mv $@.tmp $@
 
 $(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-tuples-pred-p.txt: \
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt \
-		tf-list.txt
+		$(OUTPUT_DIR)/mesh-cancer.txt \
+		tf-list.txt 
 	cat $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt | python filter_file.py $(OUTPUT_DIR)/mesh-cancer.txt -f 1 | python filter_file.py tf-list.txt -f 2 > $@.tmp
 	mv $@.tmp $@
 
