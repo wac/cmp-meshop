@@ -1,26 +1,9 @@
+# Put options you want to change in a new file called config.mk
+include config.mk.default
+sinclude config.mk
+
 # Desired Output Format
 # Disease|GeneID|prediction-p|PMIDs (max 10)
-PRED_DIR=../digenei1
-
-# Current Results
-CURR_DIR=../digenei2
-
-REF_SOURCE=generif
-
-DIRECT_GD_PREFIX=txt/direct_gene_disease
-PROFILE_GD_PREFIX=txt/profile_gene_disease
-
-OUTPUT_DIR=txt
-
-BIGTMP_DIR=tmp
-
-SQL_CMD=mysql-dbrc wcdb
-
-# Location of the CTD gene_disease_relations.tsv
-CTD_DIR=../CTD
-
-# Put options you want to change in a new file called config.mk
--include config.mk
 
 default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.wikidot \
 		$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p-histogram.pdf \
@@ -158,4 +141,6 @@ $(OUTPUT_DIR)/CTD-$(REF_SOURCE)-hum-disease-validation-auc.txt: $(OUTPUT_DIR)/CT
 # MIM2MeSH mapping
 
 clean:
-	rm txt/*.txt
+	rm -f txt/*.txt
+	rm -f txt/*.tmp
+

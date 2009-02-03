@@ -1,0 +1,19 @@
+# Archived Results (old)
+PRED_DIR=../digenei1
+
+# Current Results (new)
+CURR_DIR=../digenei2
+
+REF_SOURCE=generif
+
+DIRECT_GD_PREFIX=txt/direct_gene_disease
+PROFILE_GD_PREFIX=txt/profile_gene_disease
+
+OUTPUT_DIR=txt
+
+BIGTMP_DIR=tmp
+
+SQL_CMD=mysql-dbrc wcdb
+
+# Location of the CTD gene_disease_relations.tsv
+CTD_DIR=../CTD
