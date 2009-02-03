@@ -10,7 +10,7 @@ default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.wi
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-auc.txt \
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-training-auc.txt \
 		$(OUTPUT_DIR)/CTD-$(REF_SOURCE)-hum-disease-validation-auc.txt \
-		$(OUTPUT_DIR)/all-generif-tf-cancer-validation-auc.txt
+		$(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-auc.txt
 #		$(OUTPUT_DIR)/rev-all-$(REF_SOURCE)-hum-disease-validation-auc.txt 
 
 # Take the results from the direct in 2
