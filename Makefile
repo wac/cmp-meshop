@@ -12,6 +12,7 @@ default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.wi
 		$(OUTPUT_DIR)/CTD-$(REF_SOURCE)-hum-disease-validation-auc.txt \
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-auc.txt
 #		$(OUTPUT_DIR)/rev-all-$(REF_SOURCE)-hum-disease-validation-auc.txt 
+	rm -f $(BIGTMP_DIR)/*
 
 # Take the results from the direct in 2
 # compare to the results in the profile from 1
@@ -74,8 +75,8 @@ $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt: $(OUTP
 $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-auc.txt: $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt \
 		auc.sh roc.py 
 	rm -f $@.tmp
-	sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-graph-score roc.py
-	rm -f $(BIGTMP_DIR)/*
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-validation-graph-score roc.py
+#	rm -f $(BIGTMP_DIR)/*
 	rm -f $@.tmp.sort
 	mv $@.tmp $@
 
@@ -94,8 +95,8 @@ $(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-tuples-pred-p.txt: \
 $(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-auc.txt: $(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-tuples-pred-p.txt \
 		auc.sh roc.py 
 	rm -f $@.tmp
-	sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-graph-score roc.py
-	rm -f $(BIGTMP_DIR)/*
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-graph-score roc.py
+#	rm -f $(BIGTMP_DIR)/*
 	rm -f $@.tmp.sort
 	mv $@.tmp $@
 
@@ -108,8 +109,8 @@ $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-training-tuples-pred-p.txt:  $(OUTPU
 $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-training-auc.txt: $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-training-tuples-pred-p.txt \
 		auc.sh roc.py 
 	rm -f $@.tmp
-	sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-training-graph-score roc.py
-	rm -f $(BIGTMP_DIR)/*
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-hum-disease-training-graph-score roc.py
+#	rm -f $(BIGTMP_DIR)/*
 	rm -f $@.tmp.sort
 	mv $@.tmp $@
 
@@ -139,8 +140,8 @@ $(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt: $(
 $(OUTPUT_DIR)/CTD-$(REF_SOURCE)-hum-disease-validation-auc.txt: $(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-hum-disease-validation-tuples-pred-p.txt \
 		auc.sh roc.py 
 	rm -f $@.tmp
-	sh auc.sh $< $@.tmp $(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-hum-disease-validation-graph-score roc.py
-	rm -f $(BIGTMP_DIR)/*
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-hum-disease-validation-graph-score roc.py
+#	rm -f $(BIGTMP_DIR)/*
 	rm -f $@.tmp.sort
 	mv $@.tmp $@
 # OMIM references
