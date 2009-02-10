@@ -5,6 +5,7 @@ PRED_DIR=../digenei1
 CURR_DIR=../digenei2
 
 REF_SOURCE=generif
+TAXON_NAME=hum
 
 DIRECT_GD_PREFIX=txt/direct_gene_disease
 PROFILE_GD_PREFIX=txt/profile_gene_disease
