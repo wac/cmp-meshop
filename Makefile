@@ -10,7 +10,10 @@ default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt \
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-auc.txt \
 		$(OUTPUT_DIR)/CTD-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt \
-		$(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-auc.txt
+		$(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-auc.txt \
+		$(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-auc.txt \
+		$(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt
+
 #		$(OUTPUT_DIR)/rev-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt 
 	rm -f $(BIGTMP_DIR)/*
 
@@ -110,6 +113,33 @@ $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-auc.txt: $(OUTPUT
 		auc.sh roc.py 
 	rm -f $@.tmp
 	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-graph-score roc.py
+#	rm -f $(BIGTMP_DIR)/*
+	rm -f $@.tmp.sort
+	mv $@.tmp $@
+
+# BG predictions
+$(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt: $(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/BG-$(TAXON_NAME)-disease-$(REF_SOURCE)-profiles.txt 
+	python filter_file.py $(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/BG-$(TAXON_NAME)-disease-$(REF_SOURCE)-profiles.txt 2 YN > $@.tmp
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt: $(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt \
+		auc.sh roc.py 
+	rm -f $@.tmp
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-graph-score roc.py
+#	rm -f $(BIGTMP_DIR)/*
+	rm -f $@.tmp.sort
+	mv $@.tmp $@
+
+#BG Training
+
+$(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-tuples-pred-p.txt:  $(OUTPUT_DIR)/pred-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples.txt  $(PRED_DIR)/$(PROFILE_GD_PREFIX)/BG-$(TAXON_NAME)-disease-$(REF_SOURCE)-profiles.txt 
+	python filter_file.py  $(OUTPUT_DIR)/pred-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/BG-$(TAXON_NAME)-disease-$(REF_SOURCE)-profiles.txt 2 YN > $@.tmp
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-auc.txt: $(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-tuples-pred-p.txt \
+		auc.sh roc.py 
+	rm -f $@.tmp
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-graph-score roc.py
 #	rm -f $(BIGTMP_DIR)/*
 	rm -f $@.tmp.sort
 	mv $@.tmp $@
