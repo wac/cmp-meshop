@@ -31,7 +31,8 @@ def main():
 	auc=0.0
 	curr_positives=0
 	curr_lines=0
-	last_graph=0.0
+	next_graph_x=0.0
+	next_graph_y=0.0
 	scorefile=open(sys.argv[1])
 	outfile=open(sys.argv[2], 'w')
 	for line in scorefile:
@@ -43,9 +44,10 @@ def main():
 			curr_positives=curr_positives+1
 		tp_fraction=1.0 * curr_positives / num_positives
 		auc = auc + tp_fraction
-		if (1.0*curr_lines/num_lines) > last_graph:
-			outfile.write(str(last_graph)+"|"+str(tp_fraction)+"\n")
-			last_graph=last_graph+0.001
+		if ((1.0*curr_lines/num_lines) >= next_graph_x) || (tp_fraction > next_graph_y):
+			outfile.write(str(next_graph_x)+"|"+str(tp_fraction)+"\n")
+			next_graph_x=(1.0*curr_lines/num_lines)+0.001
+			next_graph_y=tp_fraction+0.001
 	auc = auc / num_lines
 	print "AUC:", auc
 main()
