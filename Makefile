@@ -6,6 +6,7 @@ sinclude config.mk
 # Disease|GeneID|prediction-p|PMIDs (max 10)
 
 default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.wikidot \
+		$(OUTPUT_DIR)/new-nejm-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.wikidot \
 		$(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p-histogram.pdf \
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt \
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-auc.txt \
@@ -56,7 +57,14 @@ $(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.w
 		$(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt \
 		wikiformat-results.sh
 	sort -n -t "|" -k 12,2 $(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt | head -n 100 > $@.tmp
-	export REF_SOURCE=$(REF_SOURCE) && cat $@.tmp | sh wikiformat-results.sh > $@.tmp2
+	export REF_SOURCE=$(REF_SOURCE) && export SQL_CMD2=$(SQL_CMD2) && cat $@.tmp | sh wikiformat-results.sh > $@.tmp2
+	rm $@.tmp ; mv $@.tmp2 $@
+
+$(OUTPUT_DIR)/new-nejm-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.wikidot: \
+		$(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt \
+		nejm-wikiformat-results.sh
+	sort -n -t "|" -k 12,2 $(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt > $@.tmp
+	export REF_SOURCE=$(REF_SOURCE) && export SQL_CMD2=$(SQL_CMD2) && cat $@.tmp | sh nejm-wikiformat-results.sh | grep -v "|| ||" > $@.tmp2
 	rm $@.tmp ; mv $@.tmp2 $@
 
 $(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p-histogram.txt: \
@@ -159,8 +167,8 @@ $(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-auc.txt: $(OUT
 
 # CTD Validation
 
-$(OUTPUT_DIR)/CTD-validation-tuples.txt: $(CTD_DIR)/gene_disease_relations.tsv
-	grep -v inferred $< | grep "MESH:D" | sed "y/\t/\|/" | cut -f 2,3 -d "|" | awk -F"|" '{print  $$2 "|" $$1}' | sort -k 1,2 -t "|" > $@.tmp
+$(OUTPUT_DIR)/CTD-validation-tuples.txt: $(CTD_FILE1)
+	grep -v inferred $< | grep "MESH:D" | sed "y/\t/\|/" | cut -f 2,4 -d "|"  |  sed "s/MESH://" | sort -k 2 -t "|" | join -1 1 -2 2 -t "|" $(CURR_DIR)/$(MESH_PREFIX)/mesh_ids.txt - | cut -f 2,3 -d "|" > $@.tmp
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt: $(OUTPUT_DIR)/CTD-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/$(TAXON_NAME)-disease-$(REF_SOURCE)-profiles.txt 

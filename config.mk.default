@@ -9,12 +9,15 @@ TAXON_NAME=hum
 
 DIRECT_GD_PREFIX=txt/direct_gene_disease
 PROFILE_GD_PREFIX=txt/profile_gene_disease
+MESH_PREFIX=txt/mesh
 
 OUTPUT_DIR=txt
 
 BIGTMP_DIR=tmp
 
 SQL_CMD=mysql-dbrc wcdb
+SQL_CMD2=mysql-dbrc wcdb2
 
 # Location of the CTD gene_disease_relations.tsv
-CTD_DIR=../CTD
+CTD_FILE1=../CTD/gene_disease_relations-2008-11-xx.tsv
+CTD_FILE2=../CTD/gene_disease_relations-2009-03-29.tsv
