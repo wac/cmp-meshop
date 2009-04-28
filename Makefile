@@ -11,6 +11,7 @@ default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt \
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-auc.txt \
 		$(OUTPUT_DIR)/CTD-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt \
+		$(OUTPUT_DIR)/new-CTD-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt \
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-auc.txt \
 		$(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-auc.txt \
 		$(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt
@@ -167,12 +168,24 @@ $(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-auc.txt: $(OUT
 
 # CTD Validation
 
-$(OUTPUT_DIR)/CTD-validation-tuples.txt: $(CTD_FILE1)
-	grep -v inferred $< | grep "MESH:D" | sed "y/\t/\|/" | cut -f 2,4 -d "|"  |  sed "s/MESH://" | sort -k 2 -t "|" | join -1 1 -2 2 -t "|" $(CURR_DIR)/$(MESH_PREFIX)/mesh_ids.txt - | cut -f 2,3 -d "|" > $@.tmp
+$(OUTPUT_DIR)/pred-CTD-validation-tuples.txt: $(CTD_FILE1)
+	grep -v inferred $< | grep "MESH:D" | sed "y/\t/\|/" | cut -f 2,4 -d "|"  |  sed "s/MESH://" | sort -k 2 -t "|" | join -1 1 -2 2 -t "|" $(CURR_DIR)/$(MESH_PREFIX)/mesh_ids.txt - | cut -f 2,3 -d "|" | sort > $@.tmp
 	mv $@.tmp $@
 
-$(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt: $(OUTPUT_DIR)/CTD-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/$(TAXON_NAME)-disease-$(REF_SOURCE)-profiles.txt 
-	python filter_file.py $(OUTPUT_DIR)/CTD-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/$(TAXON_NAME)-disease-$(REF_SOURCE)-profiles.txt 2 YN > $@.tmp
+$(OUTPUT_DIR)/curr-CTD-validation-tuples.txt: $(CTD_FILE2)
+	grep -v inferred $< | grep "MESH:D" | sed "y/\t/\|/" | cut -f 2,4 -d "|"  |  sed "s/MESH://" | sort -k 2 -t "|" | join -1 1 -2 2 -t "|" $(CURR_DIR)/$(MESH_PREFIX)/mesh_ids.txt - | cut -f 2,3 -d "|" | sort > $@.tmp
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/new-CTD-validation-tuples.txt: \
+		$(OUTPUT_DIR)/pred-CTD-validation-tuples.txt \
+		$(OUTPUT_DIR)/curr-CTD-validation-tuples.txt
+	comm -23 $(OUTPUT_DIR)/curr-CTD-validation-tuples.txt $(OUTPUT_DIR)/pred-CTD-validation-tuples.txt >$@.tmp
+	mv $@.tmp $@
+
+# CTD AUC for "pred" set
+
+$(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt: $(OUTPUT_DIR)/pred-CTD-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/$(TAXON_NAME)-disease-$(REF_SOURCE)-profiles.txt 
+	python filter_file.py $(OUTPUT_DIR)/pred-CTD-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/$(TAXON_NAME)-disease-$(REF_SOURCE)-profiles.txt 2 YN > $@.tmp
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/CTD-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt: $(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt \
@@ -182,6 +195,23 @@ $(OUTPUT_DIR)/CTD-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt: $(OUTP
 #	rm -f $(BIGTMP_DIR)/*
 	rm -f $@.tmp.sort
 	mv $@.tmp $@
+
+# CTD AUC for "new" set
+
+$(OUTPUT_DIR)/new-CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt: $(OUTPUT_DIR)/new-CTD-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/$(TAXON_NAME)-disease-$(REF_SOURCE)-profiles.txt 
+	python filter_file.py $(OUTPUT_DIR)/new-CTD-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/$(TAXON_NAME)-disease-$(REF_SOURCE)-profiles.txt 2 YN > $@.tmp
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/new-CTD-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt: $(OUTPUT_DIR)/new-CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt \
+		auc.sh roc.py 
+	rm -f $@.tmp
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-graph-score roc.py
+#	rm -f $(BIGTMP_DIR)/*
+	rm -f $@.tmp.sort
+	mv $@.tmp $@
+
+
+
 # OMIM references
 # MIM2MeSH mapping
 
