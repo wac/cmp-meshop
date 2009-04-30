@@ -7,5 +7,6 @@ do
   echo "***Score $count***" >> $2
   echo Computing AUC
   python $4 $2.sort $3-$count.txt >> $2 
+  rm $2.sort
   count=`expr $count - 1`
 done
