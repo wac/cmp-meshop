@@ -13,7 +13,9 @@ default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples
 		$(OUTPUT_DIR)/CTD-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt \
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-auc.txt \
 		$(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-auc.txt \
-		$(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt
+		$(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt \
+		$(OUTPUT_DIR)/$(REF_SOURCE)-biomart-$(TAXON_NAME)-disease-validation-auc.txt
+
 
 #		$(OUTPUT_DIR)/rev-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt 
 	rm -f $(BIGTMP_DIR)/*
@@ -152,6 +154,21 @@ $(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-auc.txt: $(OUT
 	rm -f $@.tmp.sort
 	mv $@.tmp $@
 
+# CTD / BioMart validation
+
+$(OUTPUT_DIR)/$(REF_SOURCE)-biomart-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt:  $(BIOMART_FILE) \
+		 $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt 
+	cut -f 1,2,3 $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt | sort -k 3 -t "|" -T $(BIGTMP_DIR) > $@.tmp1
+	sort -k 1 -t "|" -t $(BIGTMP_DIR) $(BIOMART_FILE) > $@.tmp2
+	join -1 3 -2 1 $@.tmp1 $@.tmp2 > $@.tmp
+	rm -f $@.tmp1 $@.tmp2
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/$(REF_SOURCE)-biomart-$(TAXON_NAME)-disease-validation-auc.txt:  $(OUTPUT_DIR)/$(REF_SOURCE)-biomart-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt \
+		auc.sh roc.py
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/$(REF_SOURCE)-biomart-$(TAXON_NAME)-disease-validation-graph-score roc.py
+	rm -f $@.tmp.sort
+	mv $@.tmp $@
 
 # Extract and connect the prediction values?  Above formats should be made conducive to grep
 
