@@ -21,3 +21,6 @@ SQL_CMD2=mysql-dbrc wcdb2
 # Location of the CTD gene_disease_relations.tsv
 CTD_FILE1=../CTD/gene_disease_relations-2008-11-xx.tsv
 CTD_FILE2=../CTD/gene_disease_relations-2009-03-29.tsv
+
+# Location of BioMart Gene information
+BIOMART_FILE=../cmp-digenei2/biomart-gene/BioMartGene-2009-04-xx.txt
