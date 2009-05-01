@@ -1,4 +1,6 @@
-count=13
+#count=13
+count=`head -n 1 $1 | awk -F "|" '{print NF}'`
+
 while [ $count -gt 2 ]
 do
   echo Analysing score $count
