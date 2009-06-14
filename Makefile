@@ -16,6 +16,7 @@ default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples
 		$(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-auc.txt \
 		$(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt \
 		$(OUTPUT_DIR)/$(REF_SOURCE)-biomart-$(TAXON_NAME)-disease-validation-auc.txt \
+		$(OUTPUT_DIR)/curr-old-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples.txt \
 		$(OUTPUT_DIR)/CTD-biomart-$(TAXON_NAME)-disease-validation-auc.txt
 
 
@@ -35,11 +36,18 @@ default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples
 # expand using join
 
 # Current
+# WAC Ad Date Filter here to remove tuples which have old evidence
+# Use DB query to extract all tuples with older than FILTER_DATE
+# from gene, REF_SOURCE, mesh term 
 $(OUTPUT_DIR)/curr-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples.txt: \
 		$(CURR_DIR)/$(DIRECT_GD_PREFIX)/$(TAXON_NAME)-$(REF_SOURCE)-gene-mesh-p.txt \
 		$(PRED_DIR)/$(DIRECT_GD_PREFIX)/mesh-disease.txt \
 		filter_file.py
 	cat $(CURR_DIR)/$(DIRECT_GD_PREFIX)/$(TAXON_NAME)-$(REF_SOURCE)-gene-mesh-p.txt | awk -F"|" '{print $$2 "|" $$1 }' | python filter_file.py $(PRED_DIR)/$(DIRECT_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/curr-old-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples.txt:
+	echo "SELECT DISTINCT gene.gene_id, pubmed_mesh_parent.mesh_parent FROM gene, $(REF_SOURCE), pubmed, pubmed_mesh_parent WHERE gene.taxon_id=$(TAXON_ID) AND gene.gene_id=$(REF_SOURCE).gene_id AND $(REF_SOURCE).pmid=pubmed.pmid AND pubmed.pmid=pubmed_mesh_parent.pmid AND pubmed.pubyear <= $(FILTER_YEAR)" | $(SQL_CMD2) > $@.tmp
 	mv $@.tmp $@
 
 # Previous

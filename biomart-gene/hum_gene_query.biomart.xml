@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Query>
+<Query  virtualSchemaName = "default" formatter = "TSV" header = "0"
+uniqueRows = "0" count = "" datasetConfigVersion = "0.7" >
+
+<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
+<Filter name = "with_entrezgene" excluded = "0"/>
+<Attribute name = "entrezgene" />
+<Attribute name = "start_position" />
+<Attribute name = "end_position" />
+<Attribute name = "transcript_start" />
+<Attribute name = "transcript_end" />
+<Attribute name = "transcript_count" />
+<Attribute name = "percentage_gc_content" />
+</Dataset>
+</Query>
