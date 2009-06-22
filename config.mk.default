@@ -6,6 +6,7 @@ CURR_DIR=../digenei2
 
 REF_SOURCE=generif
 TAXON_NAME=hum
+TAXON_ID=9606
 
 DIRECT_GD_PREFIX=txt/direct_gene_disease
 PROFILE_GD_PREFIX=txt/profile_gene_disease
@@ -24,3 +25,7 @@ CTD_FILE2=../CTD/gene_disease_relations-2009-03-29.tsv
 
 # Location of BioMart Gene information
 BIOMART_FILE=../cmp-digenei2/biomart-gene/BioMartGene-2009-04-xx.txt
+
+# Default date filter - only tuples with article dates > FILTER_YEAR
+# are kept in the validation set 
+FILTER_YEAR=2007
