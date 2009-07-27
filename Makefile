@@ -202,10 +202,10 @@ $(OUTPUT_DIR)/CTD-biomart-$(TAXON_NAME)-disease-validation-auc.txt:  $(OUTPUT_DI
 $(OUTPUT_DIR)/CTD-gene-stats-$(TAXON_NAME)-disease-validation-tuples-pred.txt:  $(PRED_DIR)/$(DIRECT_GD_PREFIX)/$(TAXON_NAME)-$(REF_SOURCE)-stats.txt  \
 		$(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt
 	cut -f 1,2,3 -d "|" $(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt | sort -k 3 -t "|" -T $(BIGTMP_DIR) > $@.tmp1
-	sort -k 1 -t "|" -T $(BIGTMP_DIR) $< > $@.tmp2
+	cat $< | sed "y/\t/\|/" | sort -k 1 -t "|" -T $(BIGTMP_DIR) > $@.tmp2
 # Use awk to put the join field in the right place
 	join -t "|" -1 3 -2 1 $@.tmp1 $@.tmp2 |  awk -F "|"  '{printf "%s|%s|%s", $$2, $$3, $$1; for (i=4; i <= NF; i++) {printf "|%s", $$i}; print "" } ' > $@.tmp
-	rm -f $@.tmp1 $@.tmp2
+#	rm -f $@.tmp1 $@.tmp2
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/CTD-gene-stats-$(TAXON_NAME)-disease-validation-auc.txt:  $(OUTPUT_DIR)/CTD-gene-stats-$(TAXON_NAME)-disease-validation-tuples-pred.txt \
