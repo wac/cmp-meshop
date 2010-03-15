@@ -6,14 +6,19 @@ sep='|'
 
 def usage():
 	print "Compute ROC (Receiver Operating Characteristic) and AROC (Area under ROC)"
-        print sys.argv[0], " <validationfile> <graph data output>"
+        print sys.argv[0], " <validationfile> <graph data output> [<score column>]"
 	print "Field delimiter is  '",sep,"'"
 	print "Assumes YN truth field is field 1, sorted by score"
 	
 def main():
+	score_col=-1
+	last_score=0
+
 	if len(sys.argv) < 3:
 		usage()
 		exit(-1)
+	if len(sys.argv) > 3:
+		score_col=int(sys.argv[3])-1
 	num_lines=0
 	num_positives=0
 	print "Counting Lines and Positives"
@@ -30,6 +35,7 @@ def main():
 	print "Number of Lines:", num_lines
 	print "Number of Positives:", num_positives
 	print "Number of Non-Positives:", num_negatives
+
 	auc=0.0
 	curr_positives=0
 	curr_negatives=0
@@ -38,6 +44,12 @@ def main():
 	next_graph_y=0.0
  	tp_fraction=0.0
 	np_fraction=0.0
+
+	dx=0 # Deal with ties "fairly"
+	num_scores=0
+
+	# Use "parralelogram" rather than rectangles to approximate curve
+	tp_fraction_old=0.0
 	scorefile=open(sys.argv[1])
 	outfile=open(sys.argv[2], 'w')
 	for line in scorefile:
@@ -45,17 +57,45 @@ def main():
 			continue
 		tuple=line.strip().split(sep)
 		curr_lines=curr_lines+1
-		if tuple[0]=='Y':
-			curr_positives=curr_positives+1
+
+		if curr_lines == 1:
+			# Before processing the first line
+			if score_col >= 0:
+				last_score=tuple[score_col]
+		elif (score_col < 0) or (tuple[score_col] != last_score):
+			if (score_col >= 0):
+				last_score=tuple[score_col]
+
 			tp_fraction=1.0 * curr_positives / num_positives
-		else:
-			curr_negatives=curr_negatives+1
 			np_fraction=1.0 * curr_negatives / num_negatives
-			auc = auc + tp_fraction
+			auc = auc + ((tp_fraction + tp_fraction_old) * dx / 2.0)
+			num_scores=num_scores+1
+			dx = 0
+			tp_fraction_old=tp_fraction
+			print curr_positives, curr_negatives, tp_fraction, np_fraction, auc #DEBUG
+
 			if (((np_fraction) > next_graph_x) or ((tp_fraction) > next_graph_y)):
 				outfile.write(str(np_fraction)+"|"+str(tp_fraction)+"\n")
 				next_graph_x=np_fraction+0.001
 				next_graph_y=tp_fraction+0.001
-	auc = auc / num_lines
+
+		# Process current row
+		if tuple[0]=='Y':
+			curr_positives=curr_positives+1
+		else:
+			curr_negatives=curr_negatives+1
+			dx=dx+1
+
+
+# Process Final Score
+	tp_fraction=1.0 * curr_positives / num_positives
+	np_fraction=1.0 * curr_negatives / num_negatives
+	auc = auc + ((tp_fraction + tp_fraction_old) * dx / 2.0)
+	num_scores=num_scores+1
+
+	print curr_positives, curr_negatives, auc #DEBUG
+
+#	auc = auc / num_lines
+	auc = auc / num_negatives
 	print "AUC:", auc
 main()

@@ -1,5 +1,11 @@
 #count=13
-count=`head -n 1 $1 | awk -F "|" '{print NF}'`
+if [ -n "$5" ] ; then
+    count=$5
+else
+    count=`head -n 1 $1 | awk -F "|" '{print NF}'`
+fi
+
+echo Calculating AUC for Scores 3-$count
 
 while [ $count -gt 2 ]
 do
@@ -10,7 +16,7 @@ do
   tail -n 100 $2.sort > $3-$count.last100.txt
   echo "***Score $count***" >> $2
   echo Computing AUC
-  python $4 $2.sort $3-$count.txt >> $2 
+  python $4 $2.sort $3-$count.txt $count >> $2 
   rm $2.sort
   count=`expr $count - 1`
 done

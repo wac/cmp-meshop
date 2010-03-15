@@ -11,6 +11,7 @@ TAXON_ID=9606
 DIRECT_GD_PREFIX=txt/direct_gene_disease
 PROFILE_GD_PREFIX=txt/profile_gene_disease
 MESH_PREFIX=txt/mesh
+SQL_PREFIX=txt/sql
 
 OUTPUT_DIR=txt
 
