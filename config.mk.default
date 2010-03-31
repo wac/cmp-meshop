@@ -27,6 +27,9 @@ CTD_FILE2=../CTD/gene_disease_relations-2009-03-29.tsv
 # Location of BioMart Gene information
 BIOMART_FILE=../cmp-digenei2/biomart-gene/BioMartGene-2009-04-xx.txt
 
+# Location of GCI score
+GCI_FILE=../gci/gci-scores-2007.csv
+
 # Default date filter - only tuples with article dates > FILTER_YEAR
 # are kept in the validation set 
 FILTER_YEAR=2007

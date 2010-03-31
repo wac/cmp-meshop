@@ -46,7 +46,6 @@ def main():
 	np_fraction=0.0
 
 	dx=0 # Deal with ties "fairly"
-	num_scores=0
 
 	# Use "parralelogram" rather than rectangles to approximate curve
 	tp_fraction_old=0.0
@@ -69,10 +68,8 @@ def main():
 			tp_fraction=1.0 * curr_positives / num_positives
 			np_fraction=1.0 * curr_negatives / num_negatives
 			auc = auc + ((tp_fraction + tp_fraction_old) * dx / 2.0)
-			num_scores=num_scores+1
 			dx = 0
 			tp_fraction_old=tp_fraction
-			print curr_positives, curr_negatives, tp_fraction, np_fraction, auc #DEBUG
 
 			if (((np_fraction) > next_graph_x) or ((tp_fraction) > next_graph_y)):
 				outfile.write(str(np_fraction)+"|"+str(tp_fraction)+"\n")
@@ -91,11 +88,7 @@ def main():
 	tp_fraction=1.0 * curr_positives / num_positives
 	np_fraction=1.0 * curr_negatives / num_negatives
 	auc = auc + ((tp_fraction + tp_fraction_old) * dx / 2.0)
-	num_scores=num_scores+1
 
-	print curr_positives, curr_negatives, auc #DEBUG
-
-#	auc = auc / num_lines
 	auc = auc / num_negatives
 	print "AUC:", auc
 main()
