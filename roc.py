@@ -21,12 +21,18 @@ def main():
 		score_col=int(sys.argv[3])-1
 	num_lines=0
 	num_positives=0
+	num_skip=0
 	print "Counting Lines and Positives"
 	scorefile=open(sys.argv[1])
 	for line in scorefile:
 		if line[0] == '#':
 			continue
 		tuple=line.strip().split(sep)
+		if len(tuple) <= score_col:
+			num_skip=num_skip+1
+			print "WARNING file:", sys.argv[1],"skipping line", num_skip+num_lines  , "Length",len(tuple),"Needed",score_col
+			print "LINE:",line
+			continue
 		num_lines=num_lines+1
 		if tuple[0]=='Y':
 			num_positives=num_positives+1
@@ -55,6 +61,11 @@ def main():
 		if line[0] == '#':
 			continue
 		tuple=line.strip().split(sep)
+
+		# Skip the line if to short
+		if len(tuple) <= score_col:
+			continue;
+
 		curr_lines=curr_lines+1
 
 		if curr_lines == 1:
