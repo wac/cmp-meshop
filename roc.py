@@ -13,6 +13,7 @@ def usage():
 def main():
 	score_col=-1
 	last_score=0
+	failed=0
 
 	if len(sys.argv) < 3:
 		usage()
@@ -32,6 +33,7 @@ def main():
 			num_skip=num_skip+1
 			print "WARNING file:", sys.argv[1],"skipping line", num_skip+num_lines  , "Length",len(tuple),"Needed",score_col
 			print "LINE:",line
+			failed=1
 			continue
 		num_lines=num_lines+1
 		if tuple[0]=='Y':
@@ -102,4 +104,6 @@ def main():
 
 	auc = auc / num_negatives
 	print "AUC:", auc
+	if failed:
+		exit(1)
 main()
