@@ -59,7 +59,7 @@ $(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples.txt: $(C
 		$(CURR_DIR)/$(SQL_PREFIX)/load-titles.txt \
 		$(CURR_DIR)/$(SQL_PREFIX)/load-$(REF_SOURCE).txt \
 		$(PRED_DIR)/$(DIRECT_GD_PREFIX)/mesh-disease.txt
-	echo "SELECT DISTINCT pubmed_mesh_parent.mesh_parent, gene.gene_id FROM gene, $(REF_SOURCE), pubmed, pubmed_mesh_parent WHERE gene.taxon_id=$(TAXON_ID) AND gene.gene_id=$(REF_SOURCE).gene_id AND $(REF_SOURCE).pmid=pubmed.pmid AND pubmed.pmid=pubmed_mesh_parent.pmid AND pubmed.pubyear > $(FILTER_YEAR)" | $(SQL_CMD2) | sed "y/\t/\|/" | python filter_file.py $(PRED_DIR)/$(DIRECT_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp
+	echo "SELECT DISTINCT pubmed_mesh_parent.mesh_parent, gene.gene_id FROM gene, $(REF_SOURCE), pubmed, pubmed_mesh_parent WHERE gene.taxon_id=$(TAXON_ID) AND gene.gene_id=$(REF_SOURCE).gene_id AND $(REF_SOURCE).pmid=pubmed.pmid AND pubmed.pmid=pubmed_mesh_parent.pmid GROUP BY gene.gene_id, pubmed_mesh_parent.mesh_parent HAVING MIN(pubmed.pubyear) > $(FILTER_YEAR)" | $(SQL_CMD2) | sed "y/\t/\|/" | python filter_file.py $(PRED_DIR)/$(DIRECT_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp
 	mv $@.tmp $@
 
 # Previous
