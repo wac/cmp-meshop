@@ -2,9 +2,6 @@
 include config.mk.default
 sinclude config.mk
 
-# TODO:  Biomart tie-break is currently arbitrary
-
-
 # Desired Output Format
 # Disease|GeneID|prediction-p|PMIDs (max 10)
 
@@ -119,7 +116,7 @@ $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt: $(OUTP
 
 # Filtered output
 $(OUTPUT_DIR)/mesh-cancer.txt: \
-		$(CURR_DIR)/$(MESH_PREFIX)/mesh-child.txt
+		$(CURR_DIR)/$(SQL_PREFIX)/load-mesh-parent.txt
 	echo "SELECT child FROM mesh_child WHERE term='Neoplasms'" | $(SQL_CMD) | tail -n +2 > $@.tmp
 	mv $@.tmp $@
 
@@ -137,6 +134,27 @@ $(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-cancer-validation-auc.txt: $(OUTPUT_DIR)/all-
 #	rm -f $(BIGTMP_DIR)/*
 	rm -f $@.tmp.sort
 	mv $@.tmp $@
+
+$(OUTPUT_DIR)/mesh-braindisease.txt: \
+		$(CURR_DIR)/$(SQL_PREFIX)/load-mesh-parent.txt
+	echo "SELECT child FROM mesh_child WHERE term='Brain Diseases'" | $(SQL_CMD) | tail -n +2 > $@.tmp
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-braindisease-validation-tuples-pred-p.txt: \
+		$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt \
+		$(OUTPUT_DIR)/mesh-braindisease.txt \
+		tf-list.txt 
+	cat $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt | python filter_file.py $(OUTPUT_DIR)/mesh-braindisease.txt -f 1 | python filter_file.py tf-list.txt -f 2 > $@.tmp
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-braindisease-validation-auc.txt: $(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-braindisease-validation-tuples-pred-p.txt \
+		auc.sh roc.py 
+	rm -f $@.tmp
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-tf-braindisease-validation-graph-score roc.py
+#	rm -f $(BIGTMP_DIR)/*
+	rm -f $@.tmp.sort
+	mv $@.tmp $@
+
 
 # Tuples from the Prediction Set only (Training Set)
 
@@ -219,7 +237,7 @@ $(OUTPUT_DIR)/CTD-gene-stats-$(TAXON_NAME)-disease-validation-tuples-pred.txt:  
 	cat $< | sed "y/\t/\|/" | sort -k 1,1 -t "|" -T $(BIGTMP_DIR) > $@.tmp2
 # Use awk to put the join field in the right place
 	join -t "|" -1 3 -2 1 $@.tmp1 $@.tmp2 |  awk -F "|"  '{printf "%s|%s|%s", $$2, $$3, $$1; for (i=4; i <= NF; i++) {printf "|%s", $$i}; print "" } ' > $@.tmp
-#	rm -f $@.tmp1 $@.tmp2
+	rm -f $@.tmp1 $@.tmp2
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/CTD-gene-stats-$(TAXON_NAME)-disease-validation-auc.txt:  $(OUTPUT_DIR)/CTD-gene-stats-$(TAXON_NAME)-disease-validation-tuples-pred.txt \
@@ -246,6 +264,31 @@ $(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats-$(TAXON_NAME)-disease-validation-auc.txt:
 	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats-$(TAXON_NAME)-disease-validation-graph-score roc.py
 	rm -f $@.tmp.sort
 	mv $@.tmp $@
+
+$(OUTPUT_DIR)/$(REF_SOURCE)-hum-gene-stats.txt: \
+		$(PRED_DIR)/$(SQL_PREFIX)/load-gene.txt \
+		$(PRED_DIR)/$(SQL_PREFIX)/load-$(REF_SOURCE).txt  \
+		$(PRED_DIR)/$(SQL_PREFIX)/load-titles.txt
+	echo "SELECT gene.gene_id, COUNT(DISTINCT pubmed.pmid) FROM gene, pubmed, $(REF_SOURCE) WHERE gene.gene_id=$(REF_SOURCE).gene_id AND gene.taxon_id=$(TAXON_ID) AND $(REF_SOURCE).pmid=pubmed.pmid AND pubmed.pubyear>=$(FILTER_YEARMIN) GROUP BY gene.gene_id" | $(SQL_CMD) > $@.tmp
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats2-$(TAXON_NAME)-disease-validation-tuples-pred.txt: \
+		$(OUTPUT_DIR)/$(REF_SOURCE)-hum-gene-stats.txt \
+		$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt 
+	cut -f 1,2,3 -d "|" $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt | sort -k 3,3 -t "|" -T $(BIGTMP_DIR) > $@.tmp1
+	cat $< | sed "y/\t/\|/" | sort -k 1,1 -t "|" -T $(BIGTMP_DIR) > $@.tmp2
+# Use awk to put the join field in the right place
+	join -t "|" -1 3 -2 1 $@.tmp1 $@.tmp2 |  awk -F "|"  '{printf "%s|%s|%s", $$2, $$3, $$1; for (i=4; i <= NF; i++) {printf "|%s", $$i}; print "" } ' > $@.tmp
+	rm -f $@.tmp1 $@.tmp2
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats2-$(TAXON_NAME)-disease-validation-auc.txt:  $(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats2-$(TAXON_NAME)-disease-validation-tuples-pred.txt \
+		auc.sh roc.py
+	rm -f $@.tmp
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats-$(TAXON_NAME)-disease-validation-graph-score roc.py
+	rm -f $@.tmp.sort
+	mv $@.tmp $@
+
 
 # GCI scoring
 $(OUTPUT_DIR)/$(REF_SOURCE)-gene-gci-$(TAXON_NAME)-disease-validation-tuples-pred.txt:  $(GCI_FILE) \
