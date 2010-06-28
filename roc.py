@@ -75,9 +75,6 @@ def main():
 			if score_col >= 0:
 				last_score=tuple[score_col]
 		elif (score_col < 0) or (tuple[score_col] != last_score):
-			if (score_col >= 0):
-				last_score=tuple[score_col]
-
 			tp_fraction=1.0 * curr_positives / num_positives
 			np_fraction=1.0 * curr_negatives / num_negatives
 			auc = auc + ((tp_fraction + tp_fraction_old) * dx / 2.0)
@@ -85,9 +82,15 @@ def main():
 			tp_fraction_old=tp_fraction
 
 			if (((np_fraction) > next_graph_x) or ((tp_fraction) > next_graph_y)):
-				outfile.write(str(np_fraction)+"|"+str(tp_fraction)+"\n")
+				if (score_col >= 0):
+					outfile.write(str(np_fraction)+"|"+str(tp_fraction)+"|"+last_score+"\n")
+				else:
+					outfile.write(str(np_fraction)+"|"+str(tp_fraction)+"\n")
 				next_graph_x=np_fraction+0.001
 				next_graph_y=tp_fraction+0.001
+			if (score_col >= 0):
+				last_score=tuple[score_col]
+
 
 		# Process current row
 		if tuple[0]=='Y':
