@@ -8,6 +8,7 @@ def usage():
 	print "Compute ROC (Receiver Operating Characteristic) and AROC (Area under ROC)"
         print sys.argv[0], " <validationfile> <graph data output> [<score column>]"
 	print "Field delimiter is  '",sep,"'"
+	print "Output format is not_positives_fraction|true_positive_fraction|score|TP|FN|FP|TN"
 	print "Assumes YN truth field is field 1, sorted by score"
 	
 def main():
@@ -83,7 +84,7 @@ def main():
 
 			if (((np_fraction) > next_graph_x) or ((tp_fraction) > next_graph_y)):
 				if (score_col >= 0):
-					outfile.write(str(np_fraction)+"|"+str(tp_fraction)+"|"+last_score+"\n")
+					outfile.write(str(np_fraction)+"|"+str(tp_fraction)+"|"+last_score+"|"+str(curr_positives)+"|"+str(num_positives-curr_positives)+"|"+str(curr_negatives)+"|"+str(num_negatives-curr_negatives)+"\n")
 				else:
 					outfile.write(str(np_fraction)+"|"+str(tp_fraction)+"\n")
 				next_graph_x=np_fraction+0.001
@@ -109,4 +110,5 @@ def main():
 	print "AUC:", auc
 	if failed:
 		exit(1)
+
 main()
