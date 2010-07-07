@@ -261,28 +261,27 @@ $(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats-$(TAXON_NAME)-disease-validation-auc.txt:
 	rm -f $@.tmp.sort && \
 	mv $@.tmp $@
 
-$(OUTPUT_DIR)/$(REF_SOURCE)-hum-gene-stats.txt: \
+$(OUTPUT_DIR)/$(REF_SOURCE)-hum-gene-stats2.txt: \
 		$(PRED_DIR)/$(SQL_PREFIX)/load-gene.txt \
 		$(PRED_DIR)/$(SQL_PREFIX)/load-$(REF_SOURCE).txt  \
 		$(PRED_DIR)/$(SQL_PREFIX)/load-titles.txt
-	echo "SELECT gene.gene_id, COUNT(DISTINCT pubmed.pmid) FROM gene, pubmed, $(REF_SOURCE) WHERE gene.gene_id=$(REF_SOURCE).gene_id AND gene.taxon_id=$(TAXON_ID) AND $(REF_SOURCE).pmid=pubmed.pmid AND pubmed.pubyear>=$(FILTER_YEARMIN) GROUP BY gene.gene_id" | $(SQL_CMD) > $@.tmp
+	echo "SELECT gene.gene_id, COUNT(DISTINCT pubmed.pmid) FROM gene, pubmed, $(REF_SOURCE) WHERE gene.gene_id=$(REF_SOURCE).gene_id AND gene.taxon_id=$(TAXON_ID) AND $(REF_SOURCE).pmid=pubmed.pmid AND pubmed.pubyear>=$(FILTER_YEARMIN) GROUP BY gene.gene_id" | $(SQL_CMD) > $@.tmp && \
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats2-$(TAXON_NAME)-disease-validation-tuples-pred.txt: \
-		$(OUTPUT_DIR)/$(REF_SOURCE)-hum-gene-stats.txt \
+		$(OUTPUT_DIR)/$(REF_SOURCE)-hum-gene-stats2.txt \
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt 
-	cut -f 1,2,3 -d "|" $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt | sort -k 3,3 -t "|" -T $(BIGTMP_DIR) > $@.tmp1
-	cat $< | sed "y/\t/\|/" | sort -k 1,1 -t "|" -T $(BIGTMP_DIR) > $@.tmp2
-# Use awk to put the join field in the right place
-	join -t "|" -1 3 -2 1 $@.tmp1 $@.tmp2 |  awk -F "|"  '{printf "%s|%s|%s", $$2, $$3, $$1; for (i=4; i <= NF; i++) {printf "|%s", $$i}; print "" } ' > $@.tmp
-	rm -f $@.tmp1 $@.tmp2
+	cut -f 1,2,3 -d "|" $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt | sort -k 3,3 -t "|" -T $(BIGTMP_DIR) > $@.tmp1 && \
+	cat $< | sed "y/\t/\|/" | sort -k 1,1 -t "|" -T $(BIGTMP_DIR) > $@.tmp2 && \
+	join -t "|" -1 3 -2 1 $@.tmp1 $@.tmp2 |  awk -F "|"  '{printf "%s|%s|%s", $$2, $$3, $$1; for (i=4; i <= NF; i++) {printf "|%s", $$i}; print "" } ' > $@.tmp && \
+	rm -f $@.tmp1 $@.tmp2 && \
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats2-$(TAXON_NAME)-disease-validation-auc.txt:  $(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats2-$(TAXON_NAME)-disease-validation-tuples-pred.txt \
 		auc.sh roc.py
-	rm -f $@.tmp
-	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats-$(TAXON_NAME)-disease-validation-graph-score roc.py
-	rm -f $@.tmp.sort
+	rm -f $@.tmp && \
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats-$(TAXON_NAME)-disease-validation-graph-score roc.py && \
+	rm -f $@.tmp.sort && \
 	mv $@.tmp $@
 
 
