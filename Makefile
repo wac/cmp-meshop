@@ -279,7 +279,6 @@ $(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats-$(TAXON_NAME)-disease-training-auc.txt:  
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/$(REF_SOURCE)-hum-gene-stats2.txt: \
->>>>>>> 79a12e1e2304a282f546c8c8998e6397321746bc:Makefile
 		$(PRED_DIR)/$(SQL_PREFIX)/load-gene.txt \
 		$(PRED_DIR)/$(SQL_PREFIX)/load-$(REF_SOURCE).txt  \
 		$(PRED_DIR)/$(SQL_PREFIX)/load-titles.txt
