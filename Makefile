@@ -16,8 +16,8 @@ default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples
 		$(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-training-auc.txt \
 		$(OUTPUT_DIR)/BG-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt \
 		$(OUTPUT_DIR)/$(REF_SOURCE)-biomart-$(TAXON_NAME)-disease-validation-auc.txt \
-		$(OUTPUT_DIR)/CTD-biomart-$(TAXON_NAME)-disease-validation-auc.txt \
-		$(OUTPUT_DIR)/CTD-gene-stats-$(TAXON_NAME)-disease-validation-auc.txt \
+		$(OUTPUT_DIR)/CTD-biomart-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt \
+		$(OUTPUT_DIR)/CTD-gene-stats-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt \
 		$(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats-$(TAXON_NAME)-disease-validation-auc.txt \
 		$(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats-$(TAXON_NAME)-disease-training-auc.txt \
 		$(OUTPUT_DIR)/$(REF_SOURCE)-gene-gci-$(TAXON_NAME)-disease-validation-auc.txt 
@@ -212,7 +212,7 @@ $(OUTPUT_DIR)/$(REF_SOURCE)-biomart-$(TAXON_NAME)-disease-validation-auc.txt:  $
 
 # CTD / Biomart
 # Use awk to put the join field in the right place
-$(OUTPUT_DIR)/CTD-biomart-$(TAXON_NAME)-disease-validation-tuples-pred.txt:  $(BIOMART_FILE) \
+$(OUTPUT_DIR)/CTD-biomart-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred.txt:  $(BIOMART_FILE) \
 		$(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt
 	cut -f 1,2,3 -d "|" $(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt | sort -k 3,3 -t "|" -T $(BIGTMP_DIR) > $@.tmp1 && \
 	sort -u -k 1,1 -t "|" -T $(BIGTMP_DIR) $(BIOMART_FILE) > $@.tmp2 && \
@@ -220,7 +220,7 @@ $(OUTPUT_DIR)/CTD-biomart-$(TAXON_NAME)-disease-validation-tuples-pred.txt:  $(B
 	rm -f $@.tmp1 $@.tmp2 && \
 	mv $@.tmp $@
 
-$(OUTPUT_DIR)/CTD-biomart-$(TAXON_NAME)-disease-validation-auc.txt:  $(OUTPUT_DIR)/CTD-biomart-$(TAXON_NAME)-disease-validation-tuples-pred.txt \
+$(OUTPUT_DIR)/CTD-biomart-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt:  $(OUTPUT_DIR)/CTD-biomart-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred.txt \
 		auc.sh roc.py
 	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/CTD-biomart-$(TAXON_NAME)-disease-validation-graph-score roc.py && \
 	rm -f $@.tmp.sort && \
@@ -229,7 +229,7 @@ $(OUTPUT_DIR)/CTD-biomart-$(TAXON_NAME)-disease-validation-auc.txt:  $(OUTPUT_DI
 # Validate gene stats
 # Use awk to put the join field in the right place
 
-$(OUTPUT_DIR)/CTD-gene-stats-$(TAXON_NAME)-disease-validation-tuples-pred.txt:  $(PRED_DIR)/$(DIRECT_GD_PREFIX)/$(TAXON_NAME)-$(REF_SOURCE)-stats.txt  \
+$(OUTPUT_DIR)/CTD-gene-stats-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred.txt:  $(PRED_DIR)/$(DIRECT_GD_PREFIX)/$(TAXON_NAME)-$(REF_SOURCE)-stats.txt  \
 		$(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt
 	cut -f 1,2,3 -d "|" $(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt | sort -k 3,3 -t "|" -T $(BIGTMP_DIR) > $@.tmp1 && \
 	cat $< | sed "y/\t/\|/" | sort -k 1,1 -t "|" -T $(BIGTMP_DIR) > $@.tmp2 && \
@@ -237,7 +237,7 @@ $(OUTPUT_DIR)/CTD-gene-stats-$(TAXON_NAME)-disease-validation-tuples-pred.txt:  
 	rm -f $@.tmp1 $@.tmp2 && \
 	mv $@.tmp $@
 
-$(OUTPUT_DIR)/CTD-gene-stats-$(TAXON_NAME)-disease-validation-auc.txt:  $(OUTPUT_DIR)/CTD-gene-stats-$(TAXON_NAME)-disease-validation-tuples-pred.txt \
+$(OUTPUT_DIR)/CTD-gene-stats-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt:  $(OUTPUT_DIR)/CTD-gene-stats-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred.txt \
 		auc.sh roc.py
 	rm -f $@.tmp && \
 	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/CTD-biomart-$(TAXON_NAME)-disease-validation-graph-score roc.py && \
