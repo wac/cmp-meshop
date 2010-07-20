@@ -20,7 +20,8 @@ default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples
 		$(OUTPUT_DIR)/CTD-gene-stats-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt \
 		$(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats-$(TAXON_NAME)-disease-validation-auc.txt \
 		$(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats-$(TAXON_NAME)-disease-training-auc.txt \
-		$(OUTPUT_DIR)/$(REF_SOURCE)-gene-gci-$(TAXON_NAME)-disease-validation-auc.txt 
+		$(OUTPUT_DIR)/$(REF_SOURCE)-gene-gci-$(TAXON_NAME)-disease-validation-auc.txt \
+		$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-mim2gene-training-auc.txt
 #		$(OUTPUT_DIR)/curr-old-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples.txt \
 #		$(OUTPUT_DIR)/rev-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt 
 	rm -f $(BIGTMP_DIR)/*
@@ -368,12 +369,23 @@ $(OUTPUT_DIR)/new-CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-
 $(OUTPUT_DIR)/new-CTD-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt: $(OUTPUT_DIR)/new-CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples-pred-p.txt \
 		auc.sh roc.py 
 	rm -f $@.tmp && \
-	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-graph-score roc.py && \
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/new-CTD-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-graph-score roc.py && \
 	rm -f $@.tmp.sort && \
 	mv $@.tmp $@
 
 # OMIM references
 # MIM2MeSH mapping
+$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-mim2gene-training-tuples-pred-p.txt: $(MIM2GENE_FILE1) $(PRED_DIR)/$(PROFILE_GD_PREFIX)/$(TAXON_NAME)-disease-$(REF_SOURCE)-profiles.txt 
+	python filter_file.py $< $(PRED_DIR)/$(PROFILE_GD_PREFIX)/$(TAXON_NAME)-disease-$(REF_SOURCE)-profiles.txt 2 YN > $@.tmp && \
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-mim2gene-training-auc.txt: $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-mim2gene-training-tuples-pred-p.txt \
+		auc.sh roc.py 
+	rm -f $@.tmp && \
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-mim2gene-training-graph-score roc.py && \
+	rm -f $@.tmp.sort && \
+	mv $@.tmp $@
+
 
 clean:
 	rm -f txt/*.txt

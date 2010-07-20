@@ -36,3 +36,5 @@ FILTER_YEAR=2006
 # Count only recent articles newer than YEARMIN
 FILTER_YEARMIN=2003
 
+# MeSH MIM2GENE files
+MIM2GENE_FILE1=../mesh-mim2gene/mesh-mim2gene-2010AA-Gene-2007-02-13.txt
