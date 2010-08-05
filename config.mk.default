@@ -38,3 +38,4 @@ FILTER_YEARMIN=2003
 
 # MeSH MIM2GENE files
 MIM2GENE_FILE1=../mesh-mim2gene/mesh-mim2gene-2010AA-Gene-2007-02-13.txt
+MIM2GENE_FILE2=../mesh-mim2gene/mesh-mim2gene-2010AA-Gene-2010-04-30.txt
