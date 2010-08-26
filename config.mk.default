@@ -25,7 +25,7 @@ CTD_FILE1=../CTD/gene_disease_relations-2008-11-xx.tsv
 CTD_FILE2=../CTD/gene_disease_relations-2009-03-29.tsv
 
 # Location of BioMart Gene information
-BIOMART_FILE=../cmp-digenei2/biomart-gene/BioMartGene-2009-04-xx.txt
+BIOMART_FILE=../BioMart/BioMartGene-2010-08-25.txt
 
 # Location of GCI score
 GCI_FILE=../gci/gci-scores-2007.csv
