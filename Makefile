@@ -22,7 +22,8 @@ default:	$(OUTPUT_DIR)/new-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples
 		$(OUTPUT_DIR)/$(REF_SOURCE)-gene-stats-$(TAXON_NAME)-disease-training-auc.txt \
 		$(OUTPUT_DIR)/$(REF_SOURCE)-gene-gci-$(TAXON_NAME)-disease-validation-auc.txt \
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-mim2gene-training-auc.txt \
-		$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-mim2gene-validation-auc.txt
+		$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-mim2gene-validation-auc.txt \
+		$(OUTPUT_DIR)/all-pharma-chem-disease-validation-auc.txt
 #		$(OUTPUT_DIR)/curr-old-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-tuples.txt \
 #		$(OUTPUT_DIR)/rev-all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-auc.txt 
 	rm -f $(BIGTMP_DIR)/*
@@ -406,11 +407,74 @@ $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-mim2gene-validation-auc.txt: \
 		$(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-mim2gene-validation-tuples-pred-p.txt \
 		auc.sh roc.py 
 	rm -f $@.tmp && \
-	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-mim2gene-validion-graph-score roc.py && \
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-mim2gene-validation-graph-score roc.py && \
 	rm -f $@.tmp.sort && \
 	mv $@.tmp $@
 
+# Directly only take term-gene refs involving year > FILTER_YEAR
+$(OUTPUT_DIR)/new-chem-disease-validation-tuples.txt: $(CURR_DIR)/$(SQL_PREFIX)/load-mesh-parent.txt \
+		$(CURR_DIR)/$(SQL_PREFIX)/load-gene.txt \
+		$(CURR_DIR)/$(SQL_PREFIX)/load-titles.txt \
+		$(CURR_DIR)/$(SQL_PREFIX)/load-$(REF_SOURCE).txt \
+		$(PRED_DIR)/$(DIRECT_GD_PREFIX)/mesh-disease.txt
+	echo "SELECT DISTINCT pubmed_mesh_parent.mesh_parent, pubmed_chem.term FROM pubmed_chem, pubmed, pubmed_mesh_parent WHERE pubmed_chem.pmid=pubmed.pmid AND pubmed.pmid=pubmed_mesh_parent.pmid GROUP BY pubmed_chem.term, pubmed_mesh_parent.mesh_parent HAVING MIN(pubmed.pubyear) > $(FILTER_YEAR)" | $(SQL_CMD2) | sed "y/\t/\|/" | python filter_file.py $(PRED_DIR)/$(DIRECT_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp && \
+	mv $@.tmp $@
 
+$(OUTPUT_DIR)/all-chem-disease-validation-tuples-pred-p.txt: \
+		$(OUTPUT_DIR)/new-chem-disease-validation-tuples.txt \
+		$(PRED_DIR)/$(PROFILE_GD_PREFIX)/disease-chem-profiles.txt 
+	python filter_file.py $< $(PRED_DIR)/$(PROFILE_GD_PREFIX)/$(TAXON_NAME)-disease-$(REF_SOURCE)-profiles.txt 2 YN > $@.tmp && \
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/all-chem-disease-validation-auc.txt: \
+		$(OUTPUT_DIR)/all-chem-disease-validation-tuples-pred-p.txt \
+		auc.sh roc.py 
+	rm -f $@.tmp && \
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-chem-disease-validation-graph-score roc.py && \
+	rm -f $@.tmp.sort && \
+	mv $@.tmp $@
+
+# Directly only take chem-disease refs involving year > FILTER_YEAR
+$(OUTPUT_DIR)/new-pharma-chem-disease-validation-tuples.txt: $(CURR_DIR)/$(SQL_PREFIX)/load-mesh-parent.txt \
+		$(CURR_DIR)/$(SQL_PREFIX)/load-chem.txt \
+		$(CURR_DIR)/$(SQL_PREFIX)/load-titles.txt \
+		$(PRED_DIR)/$(DIRECT_GD_PREFIX)/mesh-disease.txt
+	echo "SELECT DISTINCT pubmed_mesh_parent.mesh_parent, pubmed_chem.term FROM pubmed_chem, pubmed, pubmed_mesh_parent WHERE pubmed_chem.pmid=pubmed.pmid AND pubmed.pmid=pubmed_mesh_parent.pmid GROUP BY pubmed_chem.term, pubmed_mesh_parent.mesh_parent HAVING MIN(pubmed.pubyear) > $(FILTER_YEAR)" | $(SQL_CMD2) | sed "y/\t/\|/" | python filter_file.py $(PRED_DIR)/$(DIRECT_GD_PREFIX)/mesh-disease.txt | sort > $@.tmp && \
+	mv $@.tmp $@
+
+# Chem-disease AUC
+$(OUTPUT_DIR)/all-pharma-chem-disease-validation-tuples-pred-p.txt: \
+		$(OUTPUT_DIR)/new-pharma-chem-disease-validation-tuples.txt 
+	python filter_file.py $(OUTPUT_DIR)/new-pharma-chem-disease-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/disease-pharma-chem-profiles.txt 2 YN > $@.tmp && \
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/all-pharma-chem-disease-validation-auc.txt: $(OUTPUT_DIR)/all-pharma-chem-disease-validation-tuples-pred-p.txt \
+		auc.sh roc.py 
+	rm -f $@.tmp && \
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-graph-score roc.py && \
+	rm -f $@.tmp.sort && \
+	mv $@.tmp $@
+
+# MeSH Term Attachment
+# Directly only take mesh-mesh refs involving year > FILTER_YEAR
+$(OUTPUT_DIR)/new-comesh-validation-tuples.txt: $(CURR_DIR)/$(SQL_PREFIX)/load-mesh-parent.txt \
+		$(CURR_DIR)/$(SQL_PREFIX)/load-titles.txt 
+	echo "SELECT DISTINCT pubmed_mesh_parent.mesh_parent, pmp2.mesh_parent FROM pubmed_mesh_parent as pmp2, pubmed, pubmed_mesh_parent WHERE pmp2.pmid=pubmed.pmid AND pubmed.pmid=pubmed_mesh_parent.pmid GROUP BY pmp2.mesh_parent, pubmed_mesh_parent.mesh_parent HAVING MIN(pubmed.pubyear) > $(FILTER_YEAR)" | $(SQL_CMD2) | sed "y/\t/\|/" | sort > $@.tmp && \
+	mv $@.tmp $@
+
+# comesh AUC
+$(OUTPUT_DIR)/all-comesh-validation-tuples-pred-p.txt: \
+		$(OUTPUT_DIR)/new-comesh-validation-tuples.txt \
+		
+	python filter_file.py $(OUTPUT_DIR)/new-comesh-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/all-comesh-profiles.txt 2 YN > $@.tmp && \
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/all-pharma-chem-disease-validation-auc.txt: $(OUTPUT_DIR)/all-pharma-chem-disease-validation-tuples-pred-p.txt \
+		auc.sh roc.py 
+	rm -f $@.tmp && \
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-graph-score roc.py && \
+	rm -f $@.tmp.sort && \
+	mv $@.tmp $@
 
 clean:
 	rm -f txt/*.txt
