@@ -336,11 +336,11 @@ $(OUTPUT_DIR)/$(REF_SOURCE)-gene-gci-$(TAXON_NAME)-disease-validation-auc.txt:  
 # CTD Validation
 
 $(OUTPUT_DIR)/pred-CTD-validation-tuples.txt: $(CTD_FILE1)
-	grep -v inferred $< | grep "MESH:D" | sed "y/\t/\|/" | cut -f 2,4 -d "|"  |  sed "s/MESH://" | sort -k 2 -t "|" | join -1 1 -2 2 -t "|" $(CURR_DIR)/$(MESH_PREFIX)/mesh_ids.txt - | cut -f 2,3 -d "|" | sort > $@.tmp && \
+	grep -v inferred $< | grep "MESH:" | sed "y/\t/\|/" | cut -f 2,4 -d "|"  |  sed "s/MESH://" | sort -k 2 -t "|" | join -1 1 -2 2 -t "|" $(CURR_DIR)/$(MESH_PREFIX)/mesh_ids.txt - | cut -f 2,3 -d "|" | sort > $@.tmp && \
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/curr-CTD-validation-tuples.txt: $(CTD_FILE2)
-	grep -v inferred $< | grep "MESH:D" | sed "y/\t/\|/" | cut -f 2,4 -d "|"  |  sed "s/MESH://" | sort -k 2 -t "|" | join -1 1 -2 2 -t "|" $(CURR_DIR)/$(MESH_PREFIX)/mesh_ids.txt - | cut -f 2,3 -d "|" | sort > $@.tmp && \
+	grep -v inferred $< | grep "MESH:" | sed "y/\t/\|/" | cut -f 2,4 -d "|"  |  sed "s/MESH://" | sort -k 2 -t "|" | join -1 1 -2 2 -t "|" $(CURR_DIR)/$(MESH_PREFIX)/mesh_ids.txt - | cut -f 2,3 -d "|" | sort > $@.tmp && \
 	mv $@.tmp $@
 
 $(OUTPUT_DIR)/new-CTD-validation-tuples.txt: \
@@ -451,7 +451,7 @@ $(OUTPUT_DIR)/all-pharma-chem-disease-validation-tuples-pred-p.txt: \
 $(OUTPUT_DIR)/all-pharma-chem-disease-validation-auc.txt: $(OUTPUT_DIR)/all-pharma-chem-disease-validation-tuples-pred-p.txt \
 		auc.sh roc.py 
 	rm -f $@.tmp && \
-	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-graph-score roc.py && \
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-pharma-chem-disease-validation-graph-score roc.py && \
 	rm -f $@.tmp.sort && \
 	mv $@.tmp $@
 
@@ -465,16 +465,31 @@ $(OUTPUT_DIR)/new-comesh-validation-tuples.txt: $(CURR_DIR)/$(SQL_PREFIX)/load-m
 # comesh AUC
 $(OUTPUT_DIR)/all-comesh-validation-tuples-pred-p.txt: \
 		$(OUTPUT_DIR)/new-comesh-validation-tuples.txt \
-		
+		$(PRED_DIR)/$(PROFILE_GD_PREFIX)/all-comesh-profiles.txt
 	python filter_file.py $(OUTPUT_DIR)/new-comesh-validation-tuples.txt $(PRED_DIR)/$(PROFILE_GD_PREFIX)/all-comesh-profiles.txt 2 YN > $@.tmp && \
 	mv $@.tmp $@
 
-$(OUTPUT_DIR)/all-pharma-chem-disease-validation-auc.txt: $(OUTPUT_DIR)/all-pharma-chem-disease-validation-tuples-pred-p.txt \
+$(OUTPUT_DIR)/all-comesh-validation-auc.txt: $(OUTPUT_DIR)/all-comesh-validation-tuples-pred-p.txt \
 		auc.sh roc.py 
 	rm -f $@.tmp && \
-	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-$(REF_SOURCE)-$(TAXON_NAME)-disease-validation-graph-score roc.py && \
+	export BIGTMP_DIR=$(BIGTMP_DIR) ; sh auc.sh $< $@.tmp $(OUTPUT_DIR)/all-comesh-validation-graph-score roc.py && \
 	rm -f $@.tmp.sort && \
 	mv $@.tmp $@
+
+$(OUTPUT_DIR)/pred-CTD-chem-validation-tuples.txt: $(CTD_CHEM_FILE1)
+	cat $< | awk '$$6 ~ /therapeutic|marker\/mechanism/' | grep "MESH:" | sed "y/\t/\|/" | cut -f 1,5 -d "|"  |  sed "s/MESH://" | sort -k 2 -t "|" | join -1 1 -2 2 -t "|" $(CURR_DIR)/$(MESH_PREFIX)/mesh_ids.txt - | cut -f 2,3 -d "|" | sort > $@.tmp && \
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/curr-CTD-chem-validation-tuples.txt: $(CTD_CHEM_FILE2)
+	cat $< | awk '$$6 ~ /therapeutic|marker\/mechanism/' | grep "MESH:" | sed "y/\t/\|/" | cut -f 1,5 -d "|"  |  sed "s/MESH://" | sort -k 2 -t "|" | join -1 1 -2 2 -t "|" $(CURR_DIR)/$(MESH_PREFIX)/mesh_ids.txt - | cut -f 2,3 -d "|" | sort > $@.tmp && \
+	mv $@.tmp $@
+
+$(OUTPUT_DIR)/new-CTD-chem-validation-tuples.txt: \
+		$(OUTPUT_DIR)/pred-CTD-chem-validation-tuples.txt \
+		$(OUTPUT_DIR)/curr-CTD-chem-validation-tuples.txt
+	comm -23 $(OUTPUT_DIR)/curr-CTD-chem-validation-tuples.txt $(OUTPUT_DIR)/pred-CTD-chem-validation-tuples.txt >$@.tmp && \
+	mv $@.tmp $@
+
 
 clean:
 	rm -f txt/*.txt
